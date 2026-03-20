@@ -1,0 +1,11 @@
+# 隐私配置
+config.json
+data.db
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+logs/
