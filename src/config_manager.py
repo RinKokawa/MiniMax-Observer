@@ -1,8 +1,14 @@
 import os
+import sys
 import json
 
-# 项目根目录
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 项目根目录（兼容 PyInstaller 打包）
+if getattr(sys, 'frozen', False):
+    # 打包后配置写在 exe 同级目录
+    bundle_dir = sys._MEIPASS
+    PROJECT_ROOT = os.path.dirname(bundle_dir)
+else:
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CONFIG_FILE = os.path.join(PROJECT_ROOT, "config.json")
 
 DEFAULT_CONFIG = {

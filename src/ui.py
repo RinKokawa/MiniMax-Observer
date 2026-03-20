@@ -9,13 +9,20 @@ import json
 import io
 from datetime import datetime, timedelta
 
-# 项目根目录
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 项目根目录（兼容 PyInstaller 打包）
+if getattr(sys, 'frozen', False):
+    bundle_dir = sys._MEIPASS
+    PROJECT_ROOT = os.path.dirname(bundle_dir)
+else:
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_window_icon():
     """加载窗口图标"""
-    logo_path = os.path.join(PROJECT_ROOT, "src", "observer-logo.svg")
+    if getattr(sys, 'frozen', False):
+        logo_path = os.path.join(sys._MEIPASS, "src", "observer-logo.svg")
+    else:
+        logo_path = os.path.join(PROJECT_ROOT, "src", "observer-logo.svg")
     if os.path.exists(logo_path):
         try:
             import cairosvg

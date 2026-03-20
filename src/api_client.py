@@ -1,12 +1,17 @@
 import requests
 import json
 import os
+import sys
 from datetime import datetime
 
 API_URL = "https://www.minimaxi.com/v1/api/openplatform/coding_plan/remains"
 
-# 项目根目录
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 项目根目录（兼容 PyInstaller 打包）
+if getattr(sys, 'frozen', False):
+    bundle_dir = sys._MEIPASS
+    PROJECT_ROOT = os.path.dirname(bundle_dir)
+else:
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 def get_latest_log_data():
     """获取最近一次保存的日志数据"""

@@ -6,6 +6,18 @@ data.db
 src/__pycache__/
 *.py[cod]
 *$py.class
+*.egg-info/
+dist/
+build/
+*.egg
 
-# Logs
+# PyInstaller
+
+# 打包输出
+MiniMaxMonitor.ico
+
+# 日志
 logs/
+
+# Claude
+.claude/

@@ -7,18 +7,26 @@ import pystray
 from PIL import Image
 import io
 
-from config_manager import load_config
-from api_client import fetch_remains
-from database import init_db, Database
-from ui import App
+from src.config_manager import load_config
+from src.api_client import fetch_remains
+from src.database import init_db, Database
+from src.ui import App
 
-# 项目根目录
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 项目根目录（兼容 PyInstaller 打包）
+if getattr(sys, 'frozen', False):
+    # 打包后的可执行文件
+    bundle_dir = sys._MEIPASS
+    PROJECT_ROOT = os.path.dirname(bundle_dir)
+else:
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
 def load_logo():
     """加载logo图片"""
-    logo_path = os.path.join(PROJECT_ROOT, "src", "observer-logo.svg")
+    if getattr(sys, 'frozen', False):
+        logo_path = os.path.join(sys._MEIPASS, "src", "observer-logo.svg")
+    else:
+        logo_path = os.path.join(PROJECT_ROOT, "src", "observer-logo.svg")
     if os.path.exists(logo_path):
         try:
             import cairosvg

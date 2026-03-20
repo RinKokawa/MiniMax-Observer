@@ -1,9 +1,14 @@
 import sqlite3
 import os
+import sys
 from datetime import datetime, timezone, timedelta
 
-# 项目根目录
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# 项目根目录（兼容 PyInstaller 打包）
+if getattr(sys, 'frozen', False):
+    bundle_dir = sys._MEIPASS
+    PROJECT_ROOT = os.path.dirname(bundle_dir)
+else:
+    PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DB_FILE = os.path.join(PROJECT_ROOT, "data.db")
 
 def init_db():
