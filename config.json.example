@@ -1,0 +1,7 @@
+{
+  "cookie": "YOUR_COOKIE_HERE",
+  "group_id": "YOUR_GROUP_ID_HERE",
+  "refresh_interval": 15,
+  "auto_start": false,
+  "minimize_to_tray": true
+}
