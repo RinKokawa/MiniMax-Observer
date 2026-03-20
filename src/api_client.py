@@ -8,8 +8,66 @@ API_URL = "https://www.minimaxi.com/v1/api/openplatform/coding_plan/remains"
 # 项目根目录
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+def get_latest_log_data():
+    """获取最近一次保存的日志数据"""
+    logs_dir = os.path.join(PROJECT_ROOT, "logs")
+    if not os.path.exists(logs_dir):
+        return None
+
+    # 遍历找到最新的日志文件
+    latest_file = None
+    latest_mtime = 0
+
+    for root, dirs, files in os.walk(logs_dir):
+        for f in files:
+            if f.endswith('.json'):
+                filepath = os.path.join(root, f)
+                mtime = os.path.getmtime(filepath)
+                if mtime > latest_mtime:
+                    latest_mtime = mtime
+                    latest_file = filepath
+
+    if latest_file:
+        try:
+            with open(latest_file, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except Exception:
+            pass
+    return None
+
+def data_changed(old_data, new_data):
+    """比较两次数据是否有变化"""
+    if old_data is None:
+        return True
+
+    old_remains = old_data.get("model_remains", [])
+    new_remains = new_data.get("model_remains", [])
+
+    # 比较每个模型的配额数据
+    for new_model in new_remains:
+        new_name = new_model.get("model_name")
+        for old_model in old_remains:
+            if old_model.get("model_name") == new_name:
+                # 比较关键字段
+                if (old_model.get("current_interval_usage_count") != new_model.get("current_interval_usage_count") or
+                    old_model.get("current_interval_total_count") != new_model.get("current_interval_total_count") or
+                    old_model.get("current_weekly_usage_count") != new_model.get("current_weekly_usage_count") or
+                    old_model.get("current_weekly_total_count") != new_model.get("current_weekly_total_count")):
+                    return True
+                break
+        else:
+            # 新模型不在旧数据中
+            return True
+
+    return False
+
 def save_to_logs(data):
-    """保存请求数据到logs目录"""
+    """保存请求数据到logs目录（仅当数据有变化时）"""
+    # 检查数据是否有变化
+    latest_data = get_latest_log_data()
+    if not data_changed(latest_data, data):
+        return  # 数据没有变化，不保存
+
     logs_dir = os.path.join(PROJECT_ROOT, "logs")
 
     # 按日期和小时创建子目录
