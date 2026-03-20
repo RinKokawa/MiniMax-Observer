@@ -19,6 +19,11 @@ DEFAULT_CONFIG = {
     "minimize_to_tray": True
 }
 
+def ensure_config_file():
+    """确保配置文件存在，不存在则创建默认配置"""
+    if not os.path.exists(CONFIG_FILE):
+        save_config(DEFAULT_CONFIG.copy())
+
 def load_config():
     """加载配置文件"""
     if os.path.exists(CONFIG_FILE):
@@ -28,6 +33,8 @@ def load_config():
                 return {**DEFAULT_CONFIG, **config}
         except Exception:
             return DEFAULT_CONFIG.copy()
+    # 文件不存在，创建默认配置
+    ensure_config_file()
     return DEFAULT_CONFIG.copy()
 
 def save_config(config):
