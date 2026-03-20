@@ -1,54 +1,54 @@
 @echo off
 chcp 65001 >nul
 echo ========================================
-echo   MiniMax Monitor 构建脚本
+echo   MiniMax Monitor Build Script
 echo ========================================
 echo.
 
-:: 检查 Python
+:: Check Python
 python --version >nul 2>&1
 if errorlevel 1 (
-    echo [错误] 未找到 Python，请先安装 Python
+    echo [ERROR] Python not found. Please install Python first.
     pause
     exit /b 1
 )
 
-:: 生成图标
-echo [1.5/4] 生成程序图标...
+:: Generate icon
+echo [1.5/4] Generating icon...
 python scripts/generate_icon.py -q
-echo      完成
+echo      Done
 
-:: 检查依赖
-echo [2/4] 检查并安装依赖...
+:: Check dependencies
+echo [2/4] Installing dependencies...
 pip install -r requirements.txt -q
 if errorlevel 1 (
-    echo [错误] 依赖安装失败
+    echo [ERROR] Failed to install dependencies.
     pause
     exit /b 1
 )
-echo      完成
+echo      Done
 
-:: 清理旧构建
-echo [3/4] 清理旧构建文件...
+:: Clean old build
+echo [3/4] Cleaning old build files...
 if exist build rmdir /s /q build
 if exist dist rmdir /s /q dist
-echo      完成
+echo      Done
 
-:: 打包
-echo [4/4] 开始打包...
+:: Package
+echo [4/4] Running PyInstaller...
 pyinstaller MiniMaxMonitor.spec --clean
 if errorlevel 1 (
-    echo [错误] 打包失败
+    echo [ERROR] Build failed.
     pause
     exit /b 1
 )
 
 echo.
 echo ========================================
-echo   构建完成！
-echo   可执行文件位于: dist\MiniMaxMonitor\
+echo   Build completed!
+echo   Output: dist\MiniMaxMonitor\
 echo ========================================
 echo.
-echo 按任意键打开输出目录...
+echo Press any key to open output folder...
 pause >nul
 explorer dist\MiniMaxMonitor
