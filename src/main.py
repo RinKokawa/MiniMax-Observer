@@ -49,7 +49,7 @@ COLORS = {
     "danger": "#EF4444"
 }
 
-def setup_tray(root, app_ref):
+def setup_tray(root, app_ref, lock_file):
     """设置系统托盘"""
     # 加载图标
     icon_image = load_logo()
@@ -66,6 +66,7 @@ def setup_tray(root, app_ref):
     def quit_app(icon, item):
         if app_ref and app_ref():
             app_ref().stop()
+        release_single_instance(lock_file)
         icon.stop()
 
     menu = (
@@ -78,8 +79,58 @@ def setup_tray(root, app_ref):
     return icon
 
 
+def get_lock_file():
+    """获取锁文件路径"""
+    return os.path.join(PROJECT_ROOT, "minimax-monitor.lock")
+
+
+def acquire_single_instance():
+    """确保同一时间只能启动一个进程。成功返回锁文件对象，失败返回 None"""
+    lock_path = get_lock_file()
+    try:
+        lock_file = open(lock_path, "w")
+        # Windows: 使用 msvcrt 加锁，LK_NBLCK = 非阻塞锁
+        import msvcrt
+        msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+        return lock_file
+    except (IOError, OSError, ImportError):
+        # 锁文件已存在或其他进程持有锁
+        try:
+            lock_file.close()
+        except Exception:
+            pass
+        return None
+
+
+def release_single_instance(lock_file):
+    """释放单实例锁"""
+    if lock_file:
+        try:
+            import msvcrt
+            msvcrt.locking(lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+        except Exception:
+            pass
+        try:
+            lock_file.close()
+        except Exception:
+            pass
+        try:
+            os.remove(get_lock_file())
+        except Exception:
+            pass
+
+
 def main():
     """主函数"""
+    # 单实例检查
+    lock_file = acquire_single_instance()
+    if lock_file is None:
+        root = tk.Tk()
+        root.withdraw()  # 隐藏空白窗口
+        tk.messagebox.showwarning("提示", "程序已在运行中，请勿重复启动。")
+        root.destroy()
+        sys.exit(0)
+
     # 加载配置
     config = load_config()
 
@@ -99,7 +150,7 @@ def main():
     app_ref = [app]
 
     # 设置系统托盘
-    tray_icon = setup_tray(root, lambda: app_ref[0] if app_ref else None)
+    tray_icon = setup_tray(root, lambda: app_ref[0] if app_ref else None, lock_file)
 
     # 在后台线程运行托盘图标
     import threading
@@ -111,6 +162,8 @@ def main():
         root.mainloop()
     except KeyboardInterrupt:
         app.stop()
+    finally:
+        release_single_instance(lock_file)
 
 
 if __name__ == "__main__":
