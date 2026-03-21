@@ -18,19 +18,23 @@ else:
 
 
 def load_window_icon():
-    """加载窗口图标"""
+    """加载窗口图标，使用 PIL 从 ICO 文件读取"""
     if getattr(sys, 'frozen', False):
-        logo_path = os.path.join(sys._MEIPASS, "src", "observer-logo.svg")
+        ico_path = os.path.join(sys._MEIPASS, "MiniMaxMonitor.ico")
     else:
-        logo_path = os.path.join(PROJECT_ROOT, "src", "observer-logo.svg")
-    if os.path.exists(logo_path):
+        ico_path = os.path.join(PROJECT_ROOT, "MiniMaxMonitor.ico")
+    if os.path.exists(ico_path):
         try:
-            import cairosvg
-            png_data = cairosvg.svg2png(url=logo_path, output_width=32, output_height=32)
-            icon = tk.PhotoImage(data=png_data)
+            from PIL import Image
+            img = Image.open(ico_path)
+            # 只取 32x32 的那个尺寸（ICO 里的第二个图标）
+            img = img.convert('RGBA')
+            buf = io.BytesIO()
+            img.save(buf, format='PNG')
+            icon = tk.PhotoImage(data=buf.getvalue())
             return icon
-        except Exception:
-            pass
+        except Exception as e:
+            print(f"[WARN] Failed to load icon: {e}")
     return None
 
 # 颜色配置
@@ -90,10 +94,19 @@ class App:
         self.root.configure(bg=COLORS["bg"])
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
 
-        # 设置窗口图标
+        # 设置窗口图标（同时影响窗口标题栏和任务栏）
         icon = load_window_icon()
         if icon:
             self.root.iconphoto(True, icon)
+            # 额外设置 iconbitmap，确保任务栏图标生效
+            try:
+                if getattr(sys, 'frozen', False):
+                    ico_path = os.path.join(sys._MEIPASS, "MiniMaxMonitor.ico")
+                else:
+                    ico_path = os.path.join(PROJECT_ROOT, "MiniMaxMonitor.ico")
+                self.root.iconbitmap(ico_path)
+            except Exception:
+                pass
 
     def create_ui(self):
         """创建UI"""

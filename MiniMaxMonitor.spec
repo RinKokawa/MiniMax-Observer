@@ -15,6 +15,7 @@ a = Analysis(
     binaries=[],
     datas=[
         (os.path.join(src_path, "observer-logo.svg"), "src"),
+        (os.path.join(PROJECT_ROOT, "MiniMaxMonitor.ico"), "."),
     ],
     hiddenimports=[
         "pystray",
